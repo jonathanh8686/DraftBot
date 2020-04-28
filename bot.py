@@ -19,7 +19,7 @@ red_bans, red_picks = [], []
 
 indraft = False
 
-PICK_STATE = ["BB", "RB", "BB", "RB", "BB", "RB", "BP", "RP", "RP", "BP", "BP", "RP", "BB", "RB", "BB", "RB", "RP", "BP", "BP", "RP"]
+PICK_STATE = ["BB", "RB", "BB", "RB", "BB", "RB", "BP", "RP", "RP", "BP", "BP", "RP", "RB", "BB", "RB", "BB", "RP", "BP", "BP", "RP"]
 curr_state = -1
 prev_state = -1
 
@@ -48,6 +48,8 @@ async def play_state(channel):
         blue_bans = blue_picks = red_ban = red_picks = []
         indraft = False
         curr_state = prev_state = -1
+
+        return
 
     state = PICK_STATE[curr_state]
     msg = ""
@@ -162,6 +164,17 @@ async def on_message(message):
             return
 
         state = PICK_STATE[curr_state - 1]
+
+        if(state[0] == "B" and message.author != blue_cap):
+            await message.delete()
+            return
+
+        if(state[0] == "R" and message.author != red_cap):
+            await message.delete()
+            return
+
+
+
         if(curr_state == prev_state):
             await message.channel.send("Slow down! :stop_sign:")
             return
