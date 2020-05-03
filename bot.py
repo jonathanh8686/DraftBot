@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 import json
 import discord
 from datetime import datetime
@@ -19,19 +19,48 @@ red_bans, red_picks = [], []
 
 indraft = False
 
+cmessage = None
+
 PICK_STATE = ["BB", "RB", "BB", "RB", "BB", "RB", "BP", "RP", "RP", "BP", "BP", "RP", "RB", "BB", "RB", "BB", "RP", "BP", "BP", "RP"]
 curr_state = -1
 prev_state = -1
 
 
 #TODO: add some fuzzy string matching for champion selection?
+#TODO: fix this global shit
+
+@tasks.loop(seconds=1)
+async def update_timer():
+    global cmessage
+
+    if(cmessage == None):
+        update_timer.stop()
+        return
+
+    await bot.wait_until_ready()
+
+    ct = int(cmessage.content.split("(")[1].split(")")[0])
+    nct = ct - 1
+
+    await cmessage.edit(content=cmessage.content.split("(")[0] + "(" + str(nct) + ")")
+
+    if(nct == 0):
+        # maybe can force select a random champion if needed
+        update_timer.stop()
+        return
+
 
 
 async def play_state(channel):
-    global curr_state
+    global curr_state, prev_state
     global indraft
-    global blue_picks
-    global red_picks
+    global blue_picks, blue_bans
+    global red_picks, red_bans
+    global blue_cap, red_cap
+    global cmessage
+
+    print(red_picks)
+    print(blue_picks)
 
     if(curr_state == len(PICK_STATE)):
         await channel.send("Draft over! :checkered_flag:")
@@ -45,27 +74,33 @@ async def play_state(channel):
         await channel.send("", embed=redteam)
 
         blue_cap = red_cap = None
-        blue_bans = blue_picks = red_ban = red_picks = []
+        blue_bans = blue_picks = red_bans = red_picks = []
         indraft = False
         curr_state = prev_state = -1
+
+        print(blue_picks)
+        print(red_picks)
 
         return
 
     state = PICK_STATE[curr_state]
     msg = ""
     if(state[0] == "B"):
-        msg += "Blue team is: "
+        msg += ":blue_circle:" + blue_cap.mention + ": "
     elif(state[0] == "R"):
-        msg += "Red team is: "
+        msg += ":red_circle:" + red_cap.mention + ": "
 
     if(state[1] == "B"):
-        msg += "BANNING"
+        msg += "BANNING (30)"
     elif(state[1] == "P"):
-        msg += "PICKING"
+        msg += "PICKING (30)"
 
     curr_state += 1
-    await channel.send(msg)
-
+    cmessage = await channel.send(msg)
+    try:
+        update_timer.start()
+    except:
+        pass # asdlfkjasdflkjasdflkjasdflkajlefkajwlfjbawlgkwhr fix never
 
 
 @bot.event
@@ -131,9 +166,9 @@ async def reset(ctx):
     global indraft
     if(ctx.author.id == 141642956753862656):
         await ctx.send("Resetting all variables. :checkered_flag:")
-        blue_cap = None
-        red_cap = None
+        blue_cap = red_cap = None
         blue_picks = blue_bans = red_picks = red_bans = []
+        curr_state = prev_state = -1
         indraft = False
 
 
@@ -147,8 +182,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if(message.channel.id != 704551677297950730): # prod
-    #if(message.channel.id != 296893697113456640): # bot testing
+    #if(message.channel.id != 704551677297950730): # prod
+    if(message.channel.id != 296893697113456640): # bot testing
         return
 
     print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "\t" + str(message.author) + ":\t" + message.content) # record the messages sent
@@ -159,10 +194,6 @@ async def on_message(message):
         return
 
     if(indraft == True):
-        if(message.author != red_cap and message.author != blue_cap):
-            await message.delete()
-            return
-
         state = PICK_STATE[curr_state - 1]
 
         if(state[0] == "B" and message.author != blue_cap):
@@ -172,7 +203,6 @@ async def on_message(message):
         if(state[0] == "R" and message.author != red_cap):
             await message.delete()
             return
-
 
 
         if(curr_state == prev_state):
@@ -255,7 +285,6 @@ configData = json.loads(open("config.json", "r").read())
 for c in cogs:
     bot.load_extension(c)
 bot.run(configData["bot_token"])
-
 
 
 
