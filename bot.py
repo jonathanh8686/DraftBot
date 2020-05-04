@@ -10,7 +10,7 @@ from threading import Timer
 bot = commands.Bot(command_prefix="-")
 cogs = ["history"]
 
-CHAMPIONS = [x.strip().lower() for x in open("champions.txt", "r").read().split(",")]
+CHAMPIONS = [x.strip().lower() for x in open("data/champions.txt", "r").read().split(",")]
 
 blue_cap, red_cap = None, None
 
@@ -18,12 +18,10 @@ blue_bans, blue_picks = [], []
 red_bans, red_picks = [], []
 
 indraft = False
-
 cmessage = None
 
 PICK_STATE = ["BB", "RB", "BB", "RB", "BB", "RB", "BP", "RP", "RP", "BP", "BP", "RP", "RB", "BB", "RB", "BB", "RP", "BP", "BP", "RP"]
-curr_state = -1
-prev_state = -1
+curr_state = prev_state = -1
 
 
 #TODO: add some fuzzy string matching for champion selection?
@@ -73,10 +71,16 @@ async def play_state(channel):
         redteam.add_field(name="Picks:", value="\n".join([x.upper() for x in red_picks]))
         await channel.send("", embed=redteam)
 
-        blue_cap = red_cap = None
-        blue_bans = blue_picks = red_bans = red_picks = []
+        blue_cap = None
+        red_cap = None
+        blue_bans = []
+        blue_picks = []
+        red_bans = []
+        red_picks = []
+
         indraft = False
-        curr_state = prev_state = -1
+        curr_state = -1
+        prev_state = -1
 
         print(blue_picks)
         print(red_picks)
@@ -121,7 +125,7 @@ async def blue(ctx):
         return
     if(ctx.message.author == red_cap):
         await ctx.send(":x: You are already the red team captain! :red_circle:")
-        #return
+        return
 
     blue_cap = ctx.message.author
 
@@ -136,7 +140,7 @@ async def red(ctx):
         return
     if(ctx.message.author == blue_cap):
         await ctx.send(":x: You are already the blue team captain! :blue_circle:")
-        #return
+        return
 
     red_cap = ctx.message.author
 
@@ -166,9 +170,14 @@ async def reset(ctx):
     global indraft
     if(ctx.author.id == 141642956753862656):
         await ctx.send("Resetting all variables. :checkered_flag:")
-        blue_cap = red_cap = None
-        blue_picks = blue_bans = red_picks = red_bans = []
-        curr_state = prev_state = -1
+        blue_cap = None
+        red_cap = None
+        blue_picks = []
+        blue_bans = []
+        red_picks = []
+        red_bans = []
+        curr_state = -1
+        prev_state = -1
         indraft = False
 
 
@@ -182,8 +191,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    #if(message.channel.id != 704551677297950730): # prod
-    if(message.channel.id != 296893697113456640): # bot testing
+    if(message.channel.id != 704551677297950730): # prod
+    #if(message.channel.id != 296893697113456640): # bot testing
         return
 
     print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "\t" + str(message.author) + ":\t" + message.content) # record the messages sent
@@ -195,6 +204,7 @@ async def on_message(message):
 
     if(indraft == True):
         state = PICK_STATE[curr_state - 1]
+        print(state)
 
         if(state[0] == "B" and message.author != blue_cap):
             await message.delete()
