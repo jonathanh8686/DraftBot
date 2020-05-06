@@ -43,12 +43,11 @@ class Listen(commands.Cog):
                 summlist.append(p["summonerName"])
             print("Found summoners:\t" + " ".join(summlist))
 
-            f = open("data/matchplayers.txt", "wr")
-            cdict = json.loads(f.read())
+            cdict = json.loads(open("data/matchplayers.txt", "r").read())
             if(matchdata["gameId"] not in cdict):
                 print("Writing game data for: " + str(matchdata["gameId"]))
                 cdict[matchdata["gameId"]] = summlist
-            f.write(json.dumps(cdict))
+            open("data/matchplayers.txt", "w").write(json.dumps(cdict))
 
 
 def setup(bot):

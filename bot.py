@@ -185,7 +185,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if(not(message.channel.id == 704551677297950730 or message.channel.id == 296893697113456640):
+    if(not(message.channel.id == 704551677297950730 or message.channel.id == 296893697113456640)):
         return
 
     print("here")

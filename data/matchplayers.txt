@@ -187,7 +187,7 @@
         "alxinator123",
         "Cliftuck",
         "eMuffin",
-        "ritoblanaceteamx",
+        "ritobalanceteamx",
         "dwen",
         "TrevisaNoob"
     ],
