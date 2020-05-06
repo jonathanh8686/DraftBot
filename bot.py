@@ -8,7 +8,7 @@ from time import gmtime, strftime
 from threading import Timer
 
 bot = commands.Bot(command_prefix="-")
-cogs = ["history"]
+cogs = ["history", "listen"]
 
 CHAMPIONS = [x.strip().lower() for x in open("data/champions.txt", "r").read().split(",")]
 
@@ -57,9 +57,6 @@ async def play_state(channel):
     global blue_cap, red_cap
     global cmessage
 
-    print(red_picks)
-    print(blue_picks)
-
     if(curr_state == len(PICK_STATE)):
         await channel.send("Draft over! :checkered_flag:")
 
@@ -81,9 +78,6 @@ async def play_state(channel):
         indraft = False
         curr_state = -1
         prev_state = -1
-
-        print(blue_picks)
-        print(red_picks)
 
         return
 
@@ -191,10 +185,10 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if(message.channel.id != 704551677297950730): # prod
-    #if(message.channel.id != 296893697113456640): # bot testing
+    if(not(message.channel.id == 704551677297950730 or message.channel.id == 296893697113456640):
         return
 
+    print("here")
     print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "\t" + str(message.author) + ":\t" + message.content) # record the messages sent
 
     await bot.process_commands(message)
@@ -204,7 +198,6 @@ async def on_message(message):
 
     if(indraft == True):
         state = PICK_STATE[curr_state - 1]
-        print(state)
 
         if(state[0] == "B" and message.author != blue_cap):
             await message.delete()
