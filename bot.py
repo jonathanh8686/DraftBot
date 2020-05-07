@@ -145,7 +145,7 @@ async def start(ctx):
     global indraft
     global curr_state
     if(red_cap == None):
-        await ctx.send(":X: Missing red team captain! :x:")
+        await ctx.send(":x: Missing red team captain! :x:")
         return
     if(blue_cap == None):
         await ctx.send(":x: Missing blue team captain! :x:")
@@ -188,7 +188,6 @@ async def on_message(message):
     if(not(message.channel.id == 704551677297950730 or message.channel.id == 296893697113456640)):
         return
 
-    print("here")
     print(strftime("%Y-%m-%d %H:%M:%S", gmtime()) + "\t" + str(message.author) + ":\t" + message.content) # record the messages sent
 
     await bot.process_commands(message)
