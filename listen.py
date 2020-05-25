@@ -3,6 +3,7 @@ import requests
 import time
 from discord.ext import commands, tasks
 import asyncio
+import process
 import json
 
 
@@ -48,6 +49,9 @@ class Listen(commands.Cog):
                 print("Writing game data for: " + str(matchdata["gameId"]))
                 cdict[matchdata["gameId"]] = summlist
             open("data/matchplayers.txt", "w").write(json.dumps(cdict))
+        process.proc()
+
+
 
 
 def setup(bot):

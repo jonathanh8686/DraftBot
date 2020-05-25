@@ -41,11 +41,9 @@ def get_winloss(match_dict):
                 wrdict[cnme][1] += 1
     return wrdict
 
+def proc():
+    save_json(matchplayer.keys())
+    match_str = open("data/matchdata.txt", "r").read()
+    open("data/winrates.txt", "w").write(json.dumps(get_winloss(json.loads(match_str))))
 
-save_json(matchplayer.keys())
-match_str = open("data/matchdata.txt", "r").read()
-open("data/winrates.txt", "w").write(json.dumps(get_winloss(json.loads(match_str))))
-
-
-
-
+proc()
